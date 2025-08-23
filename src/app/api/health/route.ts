@@ -15,7 +15,7 @@ export async function GET() {
 
     // Test Gemini connection
     const llm = new ChatGoogleGenerativeAI({
-      modelName: 'gemini-pro',
+      model: 'gemini-2.0-flash',
       temperature: 0,
       apiKey: process.env.GOOGLE_API_KEY,
     })
@@ -27,7 +27,7 @@ export async function GET() {
       status: 'healthy',
       message: 'All systems operational',
       gemini: true,
-      model: 'gemini-pro',
+      model: 'gemini-2.0-flash',
       response: result.content
     })
 

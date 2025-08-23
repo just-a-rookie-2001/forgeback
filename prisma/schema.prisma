@@ -21,7 +21,7 @@ model Account {
   id_token          String?
   session_state     String?
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@unique([provider, providerAccountId])
 }
 
@@ -47,29 +47,41 @@ model User {
 }
 
 model Project {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
   description String?
   prompt      String
-  status      String   @default("generating") // generating, completed, error
+  status      String        @default("generating") // generating, completed, error
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   files       ProjectFile[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  ChatMessage ChatMessage[]
+
   @@index([userId])
 }
 
 model ProjectFile {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   projectId String
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   filename  String
   content   String
-  language  String  @default("javascript")
-  type      String  // api, db, test, config
+  language  String   @default("javascript")
+  type      String // api, db, test, config
   createdAt DateTime @default(now())
-  
+
+  @@index([projectId])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  role      String // user | assistant | system
+  content   String
+  createdAt DateTime @default(now())
+
   @@index([projectId])
 }

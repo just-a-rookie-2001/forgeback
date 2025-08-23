@@ -62,7 +62,7 @@ export async function generateBackendCodeDirect(userPrompt: string): Promise<Gen
   try {
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!)
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-pro',
+      model: 'gemini-2.0-flash',
       generationConfig: {
         temperature: 0.2,
         maxOutputTokens: 8192,

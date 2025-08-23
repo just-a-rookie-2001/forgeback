@@ -9,6 +9,7 @@
     "lint": "eslint",
     "db:push": "dotenv -e .env.local -- prisma db push",
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
+    "db:generate": "dotenv -e .env.local -- prisma generate",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "dotenv -e .env.local -- prisma studio"
   },
@@ -41,9 +42,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.21",
     "dotenv-cli": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.0",
+    "postcss": "^8.5.6",
     "prisma": "^6.14.0",
     "tailwindcss": "^4",
     "typescript": "^5"

@@ -1,25 +1,33 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { useSession, signIn, signOut } from 'next-auth/react'
-import { Button } from '@/components/ui/button'
-import { LogIn, LogOut, Code, Moon, Sun } from 'lucide-react'
-import { useTheme } from 'next-themes'
-import { useEffect, useState } from 'react'
+import Link from "next/link";
+import { useSession, signIn, signOut } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { LogIn, LogOut, Code, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 export function Navbar() {
-  const { data: session } = useSession()
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
+  const { data: session } = useSession();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
-  if (!mounted) {
-    return null
+  const toggleTheme = () => {
+    if (theme === "dark") {
+      setTheme("light");
+    } else {
+      setTheme("dark");
+    }
+  };
+
+  if(!mounted) {
+    return null;
   }
-
+  
   return (
     <nav className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -37,10 +45,16 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={toggleTheme}
+              disabled={!mounted}
+              className="w-10 h-10"
             >
-              {theme === 'dark' ? (
-                <Sun className="h-4 w-4" />
+              {mounted ? (
+                resolvedTheme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )
               ) : (
                 <Moon className="h-4 w-4" />
               )}
@@ -53,11 +67,7 @@ export function Navbar() {
                     Dashboard
                   </Button>
                 </Link>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => signOut()}
-                >
+                <Button variant="ghost" size="sm" onClick={() => signOut()}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </Button>
@@ -66,7 +76,7 @@ export function Navbar() {
               <Button
                 variant="default"
                 size="sm"
-                onClick={() => signIn('github')}
+                onClick={() => signIn("github")}
               >
                 <LogIn className="h-4 w-4 mr-2" />
                 Sign In
@@ -76,5 +86,5 @@ export function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }

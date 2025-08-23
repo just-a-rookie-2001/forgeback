@@ -10,10 +10,6 @@ import { Plus } from 'lucide-react'
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   
-  if (!session) {
-    redirect('/api/auth/signin')
-  }
-
   const projects = await db.project.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: 'desc' },
