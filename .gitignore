@@ -32,7 +32,12 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# allow to keep an example file
 !.env.example
+
+# db
+*.sqlite
+*.db
 
 # vercel
 .vercel
