@@ -10,9 +10,10 @@ import { X, Loader2 } from 'lucide-react'
 
 interface NewProjectDialogProps {
   children: React.ReactNode
+  onProjectCreated?: () => void
 }
 
-export function NewProjectDialog({ children }: NewProjectDialogProps) {
+export function NewProjectDialog({ children, onProjectCreated }: NewProjectDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
@@ -39,14 +40,14 @@ export function NewProjectDialog({ children }: NewProjectDialogProps) {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch('/api/generate', {
+      const response = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          projectName: formData.name,
+          name: formData.name,
           description: formData.description,
-          prompt: formData.prompt
-        })
+          prompt: formData.prompt,
+        }),
       })
 
       const result = await response.json()
@@ -56,12 +57,16 @@ export function NewProjectDialog({ children }: NewProjectDialogProps) {
       }
 
       toast({
-        title: "Project created!",
-        description: "Your AI backend is being generated.",
+        title: 'Project creation started!',
+        description: 'Your project is being set up. Starting with the planning phase.',
       })
 
       setIsOpen(false)
       setFormData({ name: '', description: '', prompt: '' })
+      
+      // Call the callback to refresh the parent component
+      onProjectCreated?.()
+      
       router.push(`/projects/${result.projectId}`)
 
     } catch (error) {
@@ -107,7 +112,7 @@ export function NewProjectDialog({ children }: NewProjectDialogProps) {
             </label>
             <Input
               value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               placeholder="e.g., Todo API Service"
               disabled={isSubmitting}
             />
@@ -119,7 +124,7 @@ export function NewProjectDialog({ children }: NewProjectDialogProps) {
             </label>
             <Input
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
               placeholder="Brief description of your project"
               disabled={isSubmitting}
             />
@@ -127,11 +132,11 @@ export function NewProjectDialog({ children }: NewProjectDialogProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Describe your backend feature *
+              Initial Project Requirements *
             </label>
             <Textarea
               value={formData.prompt}
-              onChange={(e) => setFormData(prev => ({ ...prev, prompt: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, prompt: e.target.value }))}
               placeholder="I need a REST API to manage todo tasks with CRUD operations, SQLite database, input validation, and comprehensive tests..."
               rows={4}
               disabled={isSubmitting}

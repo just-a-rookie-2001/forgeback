@@ -285,3 +285,71 @@ function guessFileType(content: string): 'api' | 'db' | 'test' | 'config' | 'mid
   
   return 'api'
 }
+
+export const PROJECT_PLANNING_PROMPT = `You are an expert project manager and technical architect with deep knowledge of software development lifecycles. Your task is to create a comprehensive project plan based on the user's requirements.
+
+**User Requirements:**
+{user_prompt}
+
+**Your Task:**
+Generate a detailed project plan that serves as a roadmap for developing the requested software project. The plan should be thorough, actionable, and technically sound.
+
+**Required Sections:**
+
+1. **Project Overview**
+   - Clear project title and description
+   - Target audience and user personas
+   - Core problem being solved
+   - Key success metrics
+
+2. **Goals and Objectives**
+   - Primary business objectives
+   - Technical objectives
+   - User experience goals
+   - Performance and scalability targets
+
+3. **Scope Definition**
+   - In-scope features and functionality
+   - Out-of-scope items (what won't be included)
+   - Assumptions and constraints
+   - Dependencies on external systems
+
+4. **Technical Architecture**
+   - Technology stack recommendations
+   - System architecture overview
+   - Database design considerations
+   - API design approach
+   - Security considerations
+
+5. **Feature Breakdown**
+   - Core features (MVP)
+   - Nice-to-have features (Phase 2)
+   - User stories with acceptance criteria
+   - Priority ranking
+
+6. **Development Timeline**
+   - Project phases and milestones
+   - Estimated effort for each phase
+   - Critical path identification
+   - Risk mitigation strategies
+
+7. **Resource Requirements**
+   - Technical skills needed
+   - Development team structure
+   - Infrastructure requirements
+   - Third-party services or tools
+
+8. **Risk Assessment**
+   - Technical risks and mitigation plans
+   - Business risks and contingencies
+   - Timeline risks and buffer strategies
+
+**Output Guidelines:**
+- Use clear, professional language
+- Include specific technical recommendations
+- Provide realistic timelines and effort estimates
+- Consider both technical and business aspects
+- Make the plan actionable and implementable
+- Use markdown formatting for better readability
+
+Generate a comprehensive project plan that a development team can follow from start to finish.`

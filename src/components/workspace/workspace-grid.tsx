@@ -1,35 +1,96 @@
 "use client";
-import { useState } from "react";
-import { FileBrowserViewer } from "@/components/workspace/file-browser-viewer";
-import { ChatWindow } from "@/components/workspace/chat-window";
-import { cn } from "@/lib/utils";
 
-// Client wrapper for two-column workspace
-interface WorkspaceProject {
-  id: string;
-  files: Array<{
-    id: string;
-    filename: string;
-    content: string;
-    language: string;
-    type: string;
-  }>;
+import { useState, useEffect, useMemo } from "react";
+import {
+  Panel,
+  PanelGroup,
+  PanelResizeHandle,
+} from "@/components/ui/resizable";
+import { ChatWindow } from "./chat-window";
+import { FileBrowserViewer } from "./file-browser-viewer";
+import {
+  Project,
+  Stage,
+  Artifact,
+  File as DbFile,
+  StageType,
+} from "@prisma/client";
+
+type FullProject = Project & {
+  stages: (Stage & {
+    artifacts: Artifact[];
+  })[];
+  files: (DbFile & { stageType?: StageType })[];
+};
+
+interface WorkspaceGridProps {
+  project: FullProject;
+  activeStage: StageType;
 }
 
-export function WorkspaceGrid({ project }: { project: WorkspaceProject }) {
-  const [showCode, setShowCode] = useState(true);
+export function WorkspaceGrid({ project, activeStage }: WorkspaceGridProps) {
+  const [activeFileId, setActiveFileId] = useState<string>("");
+
+  // Convert stages and files to unified file items
+  const allFiles: (DbFile & { stageType?: StageType })[] = useMemo(
+    () => [
+      // Add artifacts as files
+      ...project.stages.flatMap((stage) =>
+        stage.artifacts.map((artifact) => ({
+          id: artifact.id,
+          filename: artifact.name,
+          content: artifact.content,
+          type: artifact.type,
+          language: artifact.type === "code" ? "typescript" : "markdown",
+          stageType: stage.type,
+          createdAt: artifact.createdAt,
+          projectId: project.id,
+        }))
+      ),
+    ],
+    [project.id, project.stages]
+  );
+
+  const stageFiles = allFiles.filter((f) => f.stageType === activeStage);
+
+  // Sync active file when stage changes
+  useEffect(() => {
+    const stageFiles = allFiles.filter((f) => f.stageType === activeStage);
+    if (!activeFileId || !stageFiles.find((f) => f.id === activeFileId)) {
+      setActiveFileId(stageFiles[0]?.id || "");
+    }
+  }, [activeStage, allFiles, activeFileId]);
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 min-h-[60vh]">
-      <div className="flex flex-col col-span-1">
-        <ChatWindow
-          projectId={project.id}
-          codeVisible={showCode}
-          onToggleCode={() => setShowCode((v) => !v)}
-        />
-      </div>
-      <div className={cn('col-span-2', showCode ? "block" : "hidden lg:block")}>
-        <FileBrowserViewer files={project.files} hidden={!showCode} />
-      </div>
-    </div>
+    <PanelGroup direction="horizontal" className="flex-grow gap-1 max-h-[80vh]">
+      <Panel defaultSize={40} minSize={20}>
+        <ChatWindow projectId={project.id} stageType={activeStage} />
+      </Panel>
+      <PanelResizeHandle />
+      <Panel defaultSize={60} minSize={30}>
+        <div className="h-full flex flex-col bg-white dark:bg-gray-900">
+          {stageFiles.length === 0 ? (
+            <div className="h-full flex items-center justify-center text-gray-500">
+              <div className="text-center">
+                <p className="text-lg mb-2">
+                  No files for{" "}
+                  {activeStage.charAt(0) + activeStage.slice(1).toLowerCase()}{" "}
+                  stage yet.
+                </p>
+                <p className="text-sm">
+                  Start chatting to generate files and artifacts.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <FileBrowserViewer
+              files={stageFiles}
+              activeFileId={activeFileId}
+              onFileSelect={setActiveFileId}
+            />
+          )}
+        </div>
+      </Panel>
+    </PanelGroup>
   );
 }

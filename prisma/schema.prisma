@@ -51,18 +51,55 @@ model Project {
   name        String
   description String?
   prompt      String
-  status      String        @default("generating") // generating, completed, error
+  status      String        @default("idea") // idea, planning, designing, developing, testing, deploying, completed, error
   userId      String
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  files       ProjectFile[]
+  files       File[]
+  stages      Stage[] // Add relation to Stage
+  chatHistory ChatMessage[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  ChatMessage ChatMessage[]
-
-  @@index([userId])
 }
 
-model ProjectFile {
+enum StageType {
+  PLANNING
+  DESIGN
+  DEVELOPMENT
+  TESTING
+  DEPLOYMENT
+}
+
+enum StageStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  ERROR
+}
+
+model Stage {
+  id         String      @id @default(cuid())
+  name       String
+  type       StageType
+  status     StageStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  projectId  String
+  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  artifacts  Artifact[]
+}
+
+model Artifact {
+  id        String   @id @default(cuid())
+  name      String
+  content   String
+  type      String // e.g., 'documentation', 'code', 'diagram'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  stageId   String
+  stage     Stage    @relation(fields: [stageId], references: [id], onDelete: Cascade)
+}
+
+model File {
   id        String   @id @default(cuid())
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -76,12 +113,13 @@ model ProjectFile {
 }
 
 model ChatMessage {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   projectId String
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  role      String // user | assistant | system
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  stageType StageType @default(DEVELOPMENT) // Associate message with specific stage
+  role      String    // user | assistant | system
   content   String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
-  @@index([projectId])
+  @@index([projectId, stageType])
 }

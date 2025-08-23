@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Download, Play, RefreshCw } from 'lucide-react'
+import { Download, Play, Trash2 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
+import { useRouter } from 'next/navigation'
 
 interface Project {
   id: string
@@ -25,9 +25,42 @@ interface ProjectActionsProps {
 
 export function ProjectActions({ project }: ProjectActionsProps) {
   const [isDownloading, setIsDownloading] = useState(false)
-  const [isRegenerating, setIsRegenerating] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+
+  const deleteProject = async () => {
+    if (!confirm(`Are you sure you want to delete "${project.name}"? This action cannot be undone and will delete all related data including files, stages, artifacts, and chat history.`)) {
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'DELETE'
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete project')
+      }
+
+      toast({
+        title: 'Project deleted',
+        description: `Successfully deleted "${project.name}"`
+      })
+
+      // Redirect to dashboard
+      router.push('/dashboard')
+    } catch {
+      toast({
+        title: 'Delete failed',
+        description: 'Failed to delete the project. Please try again.',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   const downloadProject = async () => {
     if (project.files.length === 0) {
@@ -74,31 +107,6 @@ export function ProjectActions({ project }: ProjectActionsProps) {
     }
   }
 
-  const regenerateCode = async () => {
-    setIsRegenerating(true)
-    try {
-      const resp = await fetch(`/api/projects/${project.id}/regenerate`, { method: 'POST' })
-      const data = await resp.json()
-      if (!resp.ok) {
-        throw new Error(data.error || 'Failed to regenerate')
-      }
-      toast({
-        title: 'Regeneration complete',
-        description: `Generated ${data.filesCount} files.`,
-      })
-      // Refresh the route to fetch updated project + files
-      router.refresh()
-    } catch (e) {
-      toast({
-        title: 'Regeneration failed',
-        description: e instanceof Error ? e.message : 'Unknown error',
-        variant: 'destructive'
-      })
-    } finally {
-      setIsRegenerating(false)
-    }
-  }
-
   const runProject = async () => {
     toast({
       title: "Feature coming soon",
@@ -116,15 +124,6 @@ export function ProjectActions({ project }: ProjectActionsProps) {
         <Play className="h-4 w-4 mr-2" />
         Run
       </Button>
-      
-      <Button
-        variant="outline"
-        onClick={regenerateCode}
-        disabled={isRegenerating || project.status === 'generating'}
-      >
-        <RefreshCw className={`h-4 w-4 mr-2 ${isRegenerating ? 'animate-spin' : ''}`} />
-        {isRegenerating ? 'Regenerating...' : 'Regenerate'}
-      </Button>
 
       <Button
         onClick={downloadProject}
@@ -132,6 +131,15 @@ export function ProjectActions({ project }: ProjectActionsProps) {
       >
         <Download className="h-4 w-4 mr-2" />
         {isDownloading ? 'Downloading...' : 'Download'}
+      </Button>
+
+      <Button
+        variant="destructive"
+        onClick={deleteProject}
+        disabled={isDeleting}
+      >
+        <Trash2 className="h-4 w-4 mr-2" />
+        {isDeleting ? 'Deleting...' : 'Delete'}
       </Button>
     </div>
   )

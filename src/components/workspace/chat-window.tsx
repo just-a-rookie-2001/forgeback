@@ -3,8 +3,9 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Send, PanelLeftOpen, PanelLeftClose } from "lucide-react";
+import { Loader2, Send, MessageCircle, User, Bot, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { StageType } from "@prisma/client";
 
 interface ChatMessage {
   id: string;
@@ -15,36 +16,40 @@ interface ChatMessage {
 
 interface ChatWindowProps {
   projectId: string;
-  onToggleCode?: () => void;
-  codeVisible: boolean;
+  stageType: StageType;
 }
 
-export function ChatWindow({
-  projectId,
-  onToggleCode,
-  codeVisible,
-}: ChatWindowProps) {
+const stageConfig = {
+  [StageType.PLANNING]: { name: "Planning", icon: "📋" },
+  [StageType.DESIGN]: { name: "Design", icon: "🎨" },
+  [StageType.DEVELOPMENT]: { name: "Development", icon: "💻" },
+  [StageType.TESTING]: { name: "Testing", icon: "🧪" },
+  [StageType.DEPLOYMENT]: { name: "Deployment", icon: "🚀" },
+};
+
+export function ChatWindow({ projectId, stageType }: ChatWindowProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [generatingCode, setGeneratingCode] = useState(false);
+  const [query, setQuery] = useState('');
   const { toast } = useToast();
   const router = useRouter();
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const loadHistory = useCallback(async (): Promise<void> => {
     try {
-      const res = await fetch(`/api/projects/${projectId}/chat`);
+      const res = await fetch(`/api/projects/${projectId}/chat?stage=${stageType}`);
       const data = await res.json();
       if (res.ok) setMessages(data.messages);
     } catch {
       /* ignore */
     }
-  }, [projectId]);
+  }, [projectId, stageType]);
 
   useEffect(() => {
     loadHistory();
-  }, [projectId]);
+  }, [loadHistory]);
+  
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -83,15 +88,11 @@ export function ChatWindow({
     setInput("");
     setLoading(true);
 
-    if (looksLikeCodeRequest) {
-      setGeneratingCode(true);
-    }
-
     try {
-      const res = await fetch(`/api/projects/${projectId}/smart-chat`, {
+      const res = await fetch(`/api/projects/${projectId}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: content }),
+        body: JSON.stringify({ message: content, stageType }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed");
@@ -117,80 +118,114 @@ export function ChatWindow({
       setMessages((m) => m.filter((x) => !x.id.startsWith(tempId)));
     } finally {
       setLoading(false);
-      setGeneratingCode(false);
     }
   };
 
-  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
+  const filtered = query.trim()
+    ? messages.filter(m => m.content.toLowerCase().includes(query.toLowerCase()))
+    : messages;
+
+  const currentStage = stageConfig[stageType];
 
   return (
-    <div className="flex h-[75vh] flex-col overflow-scroll border border-gray-200 dark:border-gray-700 rounded-lg">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-          Smart Assistant {generatingCode && "(Generating Code...)"}
-        </h3>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggleCode}
-          title={codeVisible ? "Hide code panel" : "Show code panel"}
-        >
-          {codeVisible ? (
-            <PanelLeftClose className="h-4 w-4" />
+    <div className="flex h-full border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-900">
+      <div className="flex flex-col w-full min-w-0">
+        {/* Header */}
+        <div className="px-3 py-2 font-medium text-gray-600 dark:text-gray-300 flex items-center gap-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+          <MessageCircle className="h-4 w-4" />
+          <span className="truncate">{currentStage.name} Chat</span>
+          <span className="ml-auto text-[10px] font-normal text-gray-500 dark:text-gray-400">{messages.length}</span>
+        </div>
+
+        {/* Search */}
+        <div className="p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+          <label className="flex items-center gap-1 bg-white dark:bg-gray-900 rounded px-2 py-1 border border-gray-200 dark:border-gray-700">
+            <Search className="h-3.5 w-3.5 text-gray-400" />
+            <input
+              className="bg-transparent outline-none text-xs flex-1 text-gray-700 dark:text-gray-200 placeholder-gray-400"
+              placeholder="Search messages"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+            />
+          </label>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          {filtered.length === 0 && messages.length > 0 ? (
+            <div className="text-center text-gray-400 text-xs py-8">No matches</div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center text-gray-400 text-xs py-8">
+              Start chatting in the {currentStage.name.toLowerCase()} environment...
+            </div>
           ) : (
-            <PanelLeftOpen className="h-4 w-4" />
+            filtered.map((m) => (
+              <div key={m.id} className="flex gap-3 group">
+                {/* Avatar */}
+                <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
+                  m.role === "user" 
+                    ? "bg-blue-100 dark:bg-blue-600/30 text-blue-700 dark:text-blue-200" 
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                }`}>
+                  {m.role === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                </div>
+
+                {/* Message Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-medium text-gray-900 dark:text-white">
+                      {m.role === "user" ? "You" : "Assistant"}
+                    </span>
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                      {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <div className={`text-sm p-3 rounded-lg ${
+                    m.role === "user"
+                      ? "bg-blue-50 dark:bg-blue-600/20 border border-blue-200 dark:border-blue-600/30"
+                      : "bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                  }`}>
+                    <p className="whitespace-pre-wrap text-gray-900 dark:text-gray-100">{m.content}</p>
+                  </div>
+                </div>
+              </div>
+            ))
           )}
-        </Button>
-      </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white dark:bg-gray-900">
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className={`flex ${
-              m.role === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`max-w-[80%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap ${
-                m.role === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
-              }`}
-            >
-              {m.role === "assistant"
-                ? m.content // Don't filter assistant content anymore since we control it in the backend
-                : m.content}
+          <div ref={bottomRef} />
+        </div>
+
+        {/* Input */}
+        <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+          <div className="flex gap-2">
+            <div className="flex-1 relative">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={`Ask for ${currentStage.name.toLowerCase()} help...`}
+                className="min-h-[40px] max-h-32 field-sizing-content pr-10 text-sm bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                disabled={loading}
+                rows={1}
+              />
+              <Button
+                onClick={sendMessage}
+                disabled={loading || !input.trim()}
+                size="sm"
+                className="absolute right-1 bottom-1 h-8 w-8 p-0"
+              >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
             </div>
           </div>
-        ))}
-        <div ref={bottomRef} />
-      </div>
-      <div className="border-t border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-800">
-        <div className="flex items-end gap-2">
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKey}
-            placeholder="Ask me to generate code or discuss architecture..."
-            className="min-h-[60px] flex-1 resize-y"
-            disabled={loading}
-          />
-          <Button
-            onClick={sendMessage}
-            disabled={loading || !input.trim()}
-            className="self-stretch"
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
         </div>
       </div>
     </div>

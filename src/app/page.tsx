@@ -1,6 +1,6 @@
-import Link from 'next/link'
-import { ArrowRight, Code, Database, TestTube, Zap } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import Link from "next/link";
+import { ArrowRight, Code, Database, TestTube, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
   return (
@@ -14,8 +14,9 @@ export default function HomePage() {
               <span className="text-blue-600"> natural language</span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Describe your backend feature and get scaffolded APIs, database models, 
-              tests, and deployment configs. Your AI-powered backend development workspace.
+              Describe your backend feature and get scaffolded APIs, database
+              models, tests, and deployment configs. Your AI-powered backend
+              development workspace.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link href="/dashboard">
@@ -23,7 +24,10 @@ export default function HomePage() {
                   Get Started <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="#demo" className="text-sm font-semibold leading-6 text-gray-900 dark:text-white">
+              <Link
+                href="#demo"
+                className="text-sm font-semibold leading-6 text-gray-900 dark:text-white"
+              >
                 See demo <span aria-hidden="true">→</span>
               </Link>
             </div>
@@ -35,7 +39,9 @@ export default function HomePage() {
       <div className="py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl lg:text-center">
-            <h2 className="text-base font-semibold leading-7 text-blue-600">Everything you need</h2>
+            <h2 className="text-base font-semibold leading-7 text-blue-600">
+              Everything you need
+            </h2>
             <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
               From prompt to production-ready code
             </p>
@@ -48,7 +54,10 @@ export default function HomePage() {
                   API Generation
                 </dt>
                 <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600 dark:text-gray-300">
-                  <p className="flex-auto">Generate REST API endpoints with proper routing, validation, and error handling.</p>
+                  <p className="flex-auto">
+                    Generate REST API endpoints with proper routing, validation,
+                    and error handling.
+                  </p>
                 </dd>
               </div>
               <div className="flex flex-col">
@@ -57,7 +66,10 @@ export default function HomePage() {
                   Database Models
                 </dt>
                 <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600 dark:text-gray-300">
-                  <p className="flex-auto">Auto-generate database schemas, migrations, and ORM models from your requirements.</p>
+                  <p className="flex-auto">
+                    Auto-generate database schemas, migrations, and ORM models
+                    from your requirements.
+                  </p>
                 </dd>
               </div>
               <div className="flex flex-col">
@@ -66,7 +78,10 @@ export default function HomePage() {
                   Test Coverage
                 </dt>
                 <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600 dark:text-gray-300">
-                  <p className="flex-auto">Comprehensive unit and integration tests generated automatically for your APIs.</p>
+                  <p className="flex-auto">
+                    Comprehensive unit and integration tests generated
+                    automatically for your APIs.
+                  </p>
                 </dd>
               </div>
             </dl>
@@ -82,7 +97,8 @@ export default function HomePage() {
               See it in action
             </h2>
             <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
-              Watch how Forgeback transforms a simple description into production-ready backend code.
+              Watch how Forgeback transforms a simple description into
+              production-ready backend code.
             </p>
           </div>
           <div className="mt-16 flex justify-center">
@@ -94,41 +110,57 @@ export default function HomePage() {
                   </label>
                   <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md border">
                     <p className="text-sm text-gray-600 dark:text-gray-300 font-mono">
-                      "I need a REST API to manage todo tasks with CRUD operations, 
-                      SQLite database, input validation, and comprehensive tests."
+                      I need a REST API to manage todo tasks with CRUD
+                      operations, SQLite database, input validation, and
+                      comprehensive tests.
                     </p>
                   </div>
                 </div>
                 <div className="text-center">
                   <Zap className="h-8 w-8 text-blue-600 mx-auto" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">AI generates your code...</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    AI generates your code...
+                  </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">API Routes</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      API Routes
+                    </h4>
                     <p className="text-xs text-gray-600 dark:text-gray-300 font-mono">
-                      GET /api/todos<br/>
-                      POST /api/todos<br/>
-                      PUT /api/todos/:id<br/>
+                      GET /api/todos
+                      <br />
+                      POST /api/todos
+                      <br />
+                      PUT /api/todos/:id
+                      <br />
                       DELETE /api/todos/:id
                     </p>
                   </div>
                   <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Database Schema</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      Database Schema
+                    </h4>
                     <p className="text-xs text-gray-600 dark:text-gray-300 font-mono">
-                      todos table<br/>
-                      - id (PRIMARY KEY)<br/>
-                      - title (TEXT)<br/>
-                      - completed (BOOLEAN)
+                      todos table
+                      <br />
+                      - id (PRIMARY KEY)
+                      <br />
+                      - title (TEXT)
+                      <br />- completed (BOOLEAN)
                     </p>
                   </div>
                   <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Tests</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      Tests
+                    </h4>
                     <p className="text-xs text-gray-600 dark:text-gray-300 font-mono">
-                      ✓ Create todo<br/>
-                      ✓ List todos<br/>
-                      ✓ Update todo<br/>
-                      ✓ Delete todo
+                      ✓ Create todo
+                      <br />
+                      ✓ List todos
+                      <br />
+                      ✓ Update todo
+                      <br />✓ Delete todo
                     </p>
                   </div>
                 </div>
@@ -146,7 +178,8 @@ export default function HomePage() {
               Ready to build faster?
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-blue-200">
-              Join developers who are shipping backends 10x faster with AI-powered code generation.
+              Join developers who are shipping backends 10x faster with
+              AI-powered code generation.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link href="/dashboard">
@@ -159,5 +192,5 @@ export default function HomePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
