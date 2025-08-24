@@ -54,7 +54,6 @@ model Project {
   status      String        @default("idea") // idea, planning, designing, developing, testing, deploying, completed, error
   userId      String
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  files       File[]
   stages      Stage[] // Add relation to Stage
   chatHistory ChatMessage[]
   createdAt   DateTime      @default(now())
@@ -92,24 +91,12 @@ model Artifact {
   id        String   @id @default(cuid())
   name      String
   content   String
-  type      String // e.g., 'documentation', 'code', 'diagram'
+  type      String // e.g., 'documentation', 'code', 'diagram', 'file'
+  language  String   @default("javascript") // programming language for code artifacts
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   stageId   String
   stage     Stage    @relation(fields: [stageId], references: [id], onDelete: Cascade)
-}
-
-model File {
-  id        String   @id @default(cuid())
-  projectId String
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  filename  String
-  content   String
-  language  String   @default("javascript")
-  type      String // api, db, test, config
-  createdAt DateTime @default(now())
-
-  @@index([projectId])
 }
 
 model ChatMessage {

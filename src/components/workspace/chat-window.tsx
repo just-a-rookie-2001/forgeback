@@ -31,14 +31,16 @@ export function ChatWindow({ projectId, stageType }: ChatWindowProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const { toast } = useToast();
   const router = useRouter();
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const loadHistory = useCallback(async (): Promise<void> => {
     try {
-      const res = await fetch(`/api/projects/${projectId}/chat?stage=${stageType}`);
+      const res = await fetch(
+        `/api/projects/${projectId}/chat?stage=${stageType}`
+      );
       const data = await res.json();
       if (res.ok) setMessages(data.messages);
     } catch {
@@ -49,7 +51,7 @@ export function ChatWindow({ projectId, stageType }: ChatWindowProps) {
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
-  
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -121,10 +123,6 @@ export function ChatWindow({ projectId, stageType }: ChatWindowProps) {
     }
   };
 
-  const filtered = query.trim()
-    ? messages.filter(m => m.content.toLowerCase().includes(query.toLowerCase()))
-    : messages;
-
   const currentStage = stageConfig[stageType];
 
   return (
@@ -134,40 +132,34 @@ export function ChatWindow({ projectId, stageType }: ChatWindowProps) {
         <div className="px-3 py-2 font-medium text-gray-600 dark:text-gray-300 flex items-center gap-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
           <MessageCircle className="h-4 w-4" />
           <span className="truncate">{currentStage.name} Chat</span>
-          <span className="ml-auto text-[10px] font-normal text-gray-500 dark:text-gray-400">{messages.length}</span>
-        </div>
-
-        {/* Search */}
-        <div className="p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-          <label className="flex items-center gap-1 bg-white dark:bg-gray-900 rounded px-2 py-1 border border-gray-200 dark:border-gray-700">
-            <Search className="h-3.5 w-3.5 text-gray-400" />
-            <input
-              className="bg-transparent outline-none text-xs flex-1 text-gray-700 dark:text-gray-200 placeholder-gray-400"
-              placeholder="Search messages"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-            />
-          </label>
+          <span className="ml-auto text-[10px] font-normal text-gray-500 dark:text-gray-400">
+            {messages.length}
+          </span>
         </div>
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-3 space-y-3">
-          {filtered.length === 0 && messages.length > 0 ? (
-            <div className="text-center text-gray-400 text-xs py-8">No matches</div>
-          ) : filtered.length === 0 ? (
+          {messages.length === 0 ? (
             <div className="text-center text-gray-400 text-xs py-8">
-              Start chatting in the {currentStage.name.toLowerCase()} environment...
+              Start chatting in the {currentStage.name.toLowerCase()}{" "}
+              environment...
             </div>
           ) : (
-            filtered.map((m) => (
+            messages.map((m) => (
               <div key={m.id} className="flex gap-3 group">
                 {/* Avatar */}
-                <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
-                  m.role === "user" 
-                    ? "bg-blue-100 dark:bg-blue-600/30 text-blue-700 dark:text-blue-200" 
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                }`}>
-                  {m.role === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                <div
+                  className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
+                    m.role === "user"
+                      ? "bg-blue-100 dark:bg-blue-600/30 text-blue-700 dark:text-blue-200"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                  }`}
+                >
+                  {m.role === "user" ? (
+                    <User className="h-4 w-4" />
+                  ) : (
+                    <Bot className="h-4 w-4" />
+                  )}
                 </div>
 
                 {/* Message Content */}
@@ -177,15 +169,22 @@ export function ChatWindow({ projectId, stageType }: ChatWindowProps) {
                       {m.role === "user" ? "You" : "Assistant"}
                     </span>
                     <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                      {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(m.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </span>
                   </div>
-                  <div className={`text-sm p-3 rounded-lg ${
-                    m.role === "user"
-                      ? "bg-blue-50 dark:bg-blue-600/20 border border-blue-200 dark:border-blue-600/30"
-                      : "bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
-                  }`}>
-                    <p className="whitespace-pre-wrap text-gray-900 dark:text-gray-100">{m.content}</p>
+                  <div
+                    className={`text-sm p-3 rounded-lg ${
+                      m.role === "user"
+                        ? "bg-blue-50 dark:bg-blue-600/20 border border-blue-200 dark:border-blue-600/30"
+                        : "bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap text-gray-900 dark:text-gray-100">
+                      {m.content}
+                    </p>
                   </div>
                 </div>
               </div>

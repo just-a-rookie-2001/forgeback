@@ -21,7 +21,6 @@ export async function GET(
       userId: session.user.id 
     },
     include: {
-      files: true,
       stages: {
         include: {
           artifacts: true

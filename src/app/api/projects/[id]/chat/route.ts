@@ -20,12 +20,12 @@ export async function GET(
   if (!project) return NextResponse.json({ error: 'Project not found' }, { status: 404 })
 
   const { searchParams } = new URL(req.url)
-  const stageType = searchParams.get('stage')
+  const stageType = searchParams.get('stage') || "PLANNING"
 
   const messages = await db.chatMessage.findMany({
     where: { 
       projectId: id,
-      ...(stageType ? { stageType } : {})
+      stageType: stageType as StageType
     },
     orderBy: { createdAt: 'asc' }
   })
@@ -47,7 +47,6 @@ export async function POST(
   const project = await db.project.findFirst({ 
     where: { id, userId: session.user.id },
     include: { 
-      files: true,
       stages: {
         include: {
           artifacts: true
@@ -153,7 +152,7 @@ export async function POST(
 
       assistantContent = response.message || ''
       
-      // If code was generated, update the project files
+      // If code was generated, create artifacts in a development stage
       if (response.type === 'code_generation' && response.files) {
         // Update project status
         await db.project.update({
@@ -162,17 +161,38 @@ export async function POST(
         })
 
         try {
-          // Delete old files and create new ones
-          await db.file.deleteMany({ where: { projectId: project.id } })
+          // Find or create a development stage for generated files
+          let stage = project.stages.find(s => s.type === 'DEVELOPMENT')
+          if (!stage) {
+            stage = await db.stage.create({
+              data: {
+                projectId: project.id,
+                type: 'DEVELOPMENT',
+                status: 'IN_PROGRESS',
+                name: 'Development'
+              },
+              include: {
+                artifacts: true
+              }
+            })
+          }
+
+          // Delete old artifacts from this stage and create new ones
+          await db.artifact.deleteMany({ 
+            where: { 
+              stageId: stage.id,
+              type: 'file' // Only delete file-type artifacts, keep other artifacts
+            } 
+          })
           
           if (response.files.length > 0) {
-            await db.file.createMany({
+            await db.artifact.createMany({
               data: response.files.map(f => ({
-                projectId: project.id,
-                filename: f.filename,
+                stageId: stage.id,
+                name: f.filename,
                 content: f.content,
                 language: f.language,
-                type: f.type,
+                type: 'file', // Mark as file type artifact
               }))
             })
           }

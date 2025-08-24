@@ -16,7 +16,6 @@ import {
   type Project,
   Stage,
   Artifact,
-  File as DbFile,
   StageType,
 } from "@prisma/client";
 
@@ -24,7 +23,6 @@ type FullProject = Project & {
   stages: (Stage & {
     artifacts: Artifact[];
   })[];
-  files: DbFile[];
 };
 
 interface ProjectPageClientProps {
@@ -69,10 +67,7 @@ export function Project({ project }: ProjectPageClientProps) {
   const searchParams = useSearchParams();
   
   // Get available stages
-  const availableStages = Object.values(StageType).filter(stage => 
-    project.stages.some(s => s.type === stage) || 
-    (stage === StageType.DEVELOPMENT && project.files.length > 0)
-  );
+  const availableStages = Object.values(StageType);
 
   // Get current stage from URL or default to first available
   const currentStageParam = searchParams.get('stage') as StageType;
@@ -175,17 +170,6 @@ export function Project({ project }: ProjectPageClientProps) {
             {project.description}
           </p>
         )}
-
-        <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            Created {new Date(project.createdAt).toLocaleDateString()}
-          </div>
-          <div className="flex items-center gap-2">
-            <FileCode className="h-4 w-4" />
-            {project.files.length} files generated
-          </div>
-        </div>
       </div>
 
       <WorkspaceGrid project={project} activeStage={activeStage} />

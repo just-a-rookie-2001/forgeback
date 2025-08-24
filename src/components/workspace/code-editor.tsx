@@ -1,13 +1,18 @@
-"use client"
+"use client";
 
-import { File as DbFile } from "@prisma/client";
+import { Artifact } from "@prisma/client";
 import Editor from "@monaco-editor/react";
 
-interface CodeEditorProps {
-  file: DbFile;
+interface ArtifactWithLanguage extends Artifact {
+  language?: string;
 }
 
-export function CodeEditor({ file }: CodeEditorProps) {
+interface CodeEditorProps {
+  file: ArtifactWithLanguage;
+  wrap?: boolean;
+}
+
+export function CodeEditor({ file, wrap = false }: CodeEditorProps) {
   if (!file) {
     return (
       <div className="h-full flex items-center justify-center text-gray-500">
@@ -19,12 +24,13 @@ export function CodeEditor({ file }: CodeEditorProps) {
   return (
     <Editor
       height="100%"
-      language={file.language}
+      language={file.language || "javascript"}
       value={file.content}
       theme="vs-dark"
       options={{
         readOnly: false,
         minimap: { enabled: false },
+        wordWrap: wrap ? "on" : "off",
       }}
     />
   );

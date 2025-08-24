@@ -22,9 +22,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       userId: session.user.id,
     },
     include: {
-      files: {
-        orderBy: { createdAt: "asc" },
-      },
       stages: {
         include: {
           artifacts: true,

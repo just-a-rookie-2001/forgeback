@@ -1,8 +1,8 @@
 export interface GeneratedFile {
-  filename: string
+  filename: string // Keep as filename for backward compatibility with LLM generation
   content: string
   language: string
-  type: 'api' | 'db' | 'test' | 'config' | 'middleware'
+  type: 'api' | 'db' | 'test' | 'config' | 'middleware' | 'component' | 'page' | 'service' | 'style' | 'utility' | 'code'
 }
 
 export interface GenerationResponse {

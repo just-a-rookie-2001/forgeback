@@ -10,12 +10,17 @@ interface Project {
   id: string
   name: string
   status: string
-  files: Array<{
+  stages: Array<{
     id: string
-    filename: string
-    content: string
-    language: string
+    name: string
     type: string
+    artifacts: Array<{
+      id: string
+      name: string
+      content: string
+      language?: string
+      type: string
+    }>
   }>
 }
 
@@ -63,7 +68,12 @@ export function ProjectActions({ project }: ProjectActionsProps) {
   }
 
   const downloadProject = async () => {
-    if (project.files.length === 0) {
+    // Get all artifacts from all stages that have the type 'file'
+    const allArtifacts = project.stages.flatMap(stage => 
+      stage.artifacts.filter(artifact => artifact.type === 'file' || !artifact.type)
+    )
+    
+    if (allArtifacts.length === 0) {
       toast({
         title: "No files to download",
         description: "This project doesn't have any generated files yet.",
@@ -77,8 +87,8 @@ export function ProjectActions({ project }: ProjectActionsProps) {
     try {
       // Create a simple ZIP-like structure as a text file for MVP
       // In production, you'd use JSZip or similar
-      const projectContent = project.files.map(file => 
-        `// File: ${file.filename}\n// Language: ${file.language}\n// Type: ${file.type}\n\n${file.content}\n\n${'='.repeat(80)}\n\n`
+      const projectContent = allArtifacts.map(artifact => 
+        `// File: ${artifact.name}\n// Language: ${artifact.language || 'unknown'}\n// Type: ${artifact.type}\n\n${artifact.content}\n\n${'='.repeat(80)}\n\n`
       ).join('')
 
       const blob = new Blob([projectContent], { type: 'text/plain' })
@@ -127,7 +137,7 @@ export function ProjectActions({ project }: ProjectActionsProps) {
 
       <Button
         onClick={downloadProject}
-        disabled={isDownloading || project.files.length === 0}
+        disabled={isDownloading || project.stages.flatMap(s => s.artifacts.filter(a => a.type === 'file' || !a.type)).length === 0}
       >
         <Download className="h-4 w-4 mr-2" />
         {isDownloading ? 'Downloading...' : 'Download'}

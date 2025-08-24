@@ -7,20 +7,30 @@ import {
   PanelResizeHandle,
 } from "@/components/ui/resizable";
 import { ChatWindow } from "./chat-window";
-import { FileBrowserViewer } from "./file-browser-viewer";
+import { FileWindow } from "./file-window";
 import {
   Project,
   Stage,
   Artifact,
-  File as DbFile,
   StageType,
 } from "@prisma/client";
+
+type ArtifactAsFile = {
+  id: string;
+  name: string;
+  content: string;
+  type: string;
+  language?: string;
+  stageType: StageType;
+  createdAt: Date;
+  updatedAt: Date;
+  stageId: string;
+};
 
 type FullProject = Project & {
   stages: (Stage & {
     artifacts: Artifact[];
   })[];
-  files: (DbFile & { stageType?: StageType })[];
 };
 
 interface WorkspaceGridProps {
@@ -30,25 +40,27 @@ interface WorkspaceGridProps {
 
 export function WorkspaceGrid({ project, activeStage }: WorkspaceGridProps) {
   const [activeFileId, setActiveFileId] = useState<string>("");
+  const [projectData, setProjectData] = useState(project);
 
-  // Convert stages and files to unified file items
-  const allFiles: (DbFile & { stageType?: StageType })[] = useMemo(
+  // Convert stages and artifacts to unified file items
+  const allFiles: ArtifactAsFile[] = useMemo(
     () => [
       // Add artifacts as files
-      ...project.stages.flatMap((stage) =>
+      ...projectData.stages.flatMap((stage) =>
         stage.artifacts.map((artifact) => ({
           id: artifact.id,
-          filename: artifact.name,
+          name: artifact.name,
           content: artifact.content,
           type: artifact.type,
-          language: artifact.type === "code" ? "typescript" : "markdown",
+          language: (artifact as Artifact & {language?: string}).language || (artifact.type === "code" ? "typescript" : "markdown"),
           stageType: stage.type,
           createdAt: artifact.createdAt,
-          projectId: project.id,
+          updatedAt: artifact.updatedAt,
+          stageId: artifact.stageId,
         }))
       ),
     ],
-    [project.id, project.stages]
+    [projectData.stages]
   );
 
   const stageFiles = allFiles.filter((f) => f.stageType === activeStage);
@@ -61,35 +73,58 @@ export function WorkspaceGrid({ project, activeStage }: WorkspaceGridProps) {
     }
   }, [activeStage, allFiles, activeFileId]);
 
+  // Update project data when props change
+  useEffect(() => {
+    setProjectData(project);
+  }, [project]);
+
+  const handleFileDeleted = (fileId: string) => {
+    // Update local state
+    setProjectData(prevProject => ({
+      ...prevProject,
+      stages: prevProject.stages.map(stage => ({
+        ...stage,
+        artifacts: stage.artifacts.filter(artifact => artifact.id !== fileId)
+      }))
+    }));
+
+    // If the deleted file was active, select another file
+    if (activeFileId === fileId) {
+      const remainingFiles = stageFiles.filter(f => f.id !== fileId);
+      setActiveFileId(remainingFiles[0]?.id || "");
+    }
+  };
+
+  const handleFileRenamed = (fileId: string, newName: string) => {
+    // Update local state
+    setProjectData(prevProject => ({
+      ...prevProject,
+      stages: prevProject.stages.map(stage => ({
+        ...stage,
+        artifacts: stage.artifacts.map(artifact => 
+          artifact.id === fileId 
+            ? { ...artifact, name: newName }
+            : artifact
+        )
+      }))
+    }));
+  };
+
   return (
-    <PanelGroup direction="horizontal" className="flex-grow gap-1 max-h-[80vh]">
-      <Panel defaultSize={40} minSize={20}>
+    <PanelGroup direction="horizontal" className="flex-grow gap-1 min-h-[60vh] max-h-[80vh]">
+      <Panel defaultSize={30} minSize={20}>
         <ChatWindow projectId={project.id} stageType={activeStage} />
       </Panel>
       <PanelResizeHandle />
-      <Panel defaultSize={60} minSize={30}>
-        <div className="h-full flex flex-col bg-white dark:bg-gray-900">
-          {stageFiles.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-gray-500">
-              <div className="text-center">
-                <p className="text-lg mb-2">
-                  No files for{" "}
-                  {activeStage.charAt(0) + activeStage.slice(1).toLowerCase()}{" "}
-                  stage yet.
-                </p>
-                <p className="text-sm">
-                  Start chatting to generate files and artifacts.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <FileBrowserViewer
-              files={stageFiles}
-              activeFileId={activeFileId}
-              onFileSelect={setActiveFileId}
-            />
-          )}
-        </div>
+      <Panel defaultSize={70} minSize={30}>
+        <FileWindow
+          files={stageFiles}
+          activeFileId={activeFileId}
+          onFileSelect={setActiveFileId}
+          projectId={projectData.id}
+          onFileDeleted={handleFileDeleted}
+          onFileRenamed={handleFileRenamed}
+        />
       </Panel>
     </PanelGroup>
   );
