@@ -1,6 +1,7 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { GeneratedFile } from "./types";
-import { DEVELOPMENT_TEST_PROMPT } from "./prompts";
+import { GeneratedFile } from "../types";
+import { detectOptimalLanguage, cleanCodeContent } from "@/lib/language-utils";
+import { DEVELOPMENT_TEST_PROMPT } from "../prompts";
 
 export class TestingWorkflowManager {
   private llm: ChatGoogleGenerativeAI;
@@ -383,10 +384,16 @@ Include proper test scripts in package.json and documentation.`;
 
         // Validate and add file
         if (filename && content && content.length > 10) {
+          // Clean the content to remove any markdown code blocks
+          const cleanedContent = cleanCodeContent(content, language);
+          
+          // Detect the optimal language for Monaco editor
+          const detectedLanguage = detectOptimalLanguage(filename, language);
+          
           files.push({
             filename,
-            content,
-            language,
+            content: cleanedContent,
+            language: detectedLanguage,
             type: type as
               | "api"
               | "db"

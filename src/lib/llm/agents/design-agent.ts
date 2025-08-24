@@ -2,7 +2,7 @@ import { Agent } from "./base-agent";
 import { Stage, Artifact } from "@prisma/client";
 import { db } from "@/lib/db";
 import { ContextRetriever } from '../context-retriever';
-import { DesignWorkflowManager } from '../design-workflow';
+import { DesignWorkflowManager } from '../workflows/design-workflow';
 
 export class DesignAgent implements Agent {
   private contextRetriever: ContextRetriever;

@@ -80,6 +80,9 @@ importers:
       sqlite3:
         specifier: ^5.1.7
         version: 5.1.7
+      sse-channel:
+        specifier: ^4.0.0
+        version: 4.0.0
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.3.1
@@ -2920,6 +2923,9 @@ packages:
 
   sqlite3@5.1.7:
     resolution: {integrity: sha512-GGIyOiFaG+TUra3JIfkI/zGP8yZYLPQ0pl1bH+ODjiX57sPhrLU5sQJn1y9bDKZUFYkX1crlrPfSYt0BKKdkog==}
+
+  sse-channel@4.0.0:
+    resolution: {integrity: sha512-I539Tc0gyDTQ2QCSg4v78Flxo/UbqR9x7JoyPcqaPtwo+qzeOw/fF+aPSbk0xTvBQAAAZk7Dlkc8K1bum5GUnw==}
 
   ssri@8.0.1:
     resolution: {integrity: sha512-97qShzy1AiyxvPNIkLWoGua7xoQzzPjQ0HAH4B0rWKo7SZ6USuPcrUiAFrws0UH8RrbWmgq3LMTObhPIHbbBeQ==}
@@ -6158,6 +6164,8 @@ snapshots:
     transitivePeerDependencies:
       - bluebird
       - supports-color
+
+  sse-channel@4.0.0: {}
 
   ssri@8.0.1:
     dependencies:

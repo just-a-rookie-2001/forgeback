@@ -2,7 +2,7 @@ import { Agent } from "./base-agent";
 import { Stage, Artifact } from "@prisma/client";
 import { db } from "@/lib/db";
 import { ContextRetriever, ContextDocument } from "../context-retriever";
-import { DevelopmentWorkflowManager } from "../development-workflow";
+import { DevelopmentWorkflowManager } from "../workflows/development-workflow";
 
 export class DevelopmentAgent implements Agent {
   private contextRetriever: ContextRetriever;
@@ -81,13 +81,14 @@ export class DevelopmentAgent implements Agent {
 
       console.log("📄 Creating development artifacts...");
 
-      // Backend files
+            // Backend files
       for (const file of workflowResult.backendFiles) {
         const artifact = await db.artifact.create({
           data: {
             name: file.filename,
             content: file.content,
             type: "code",
+            language: file.language,
             stageId: stage.id,
           },
         });
@@ -100,20 +101,22 @@ export class DevelopmentAgent implements Agent {
           data: {
             name: file.filename,
             content: file.content,
-            type: "code",
+            type: "test",
+            language: file.language,
             stageId: stage.id,
           },
         });
         artifacts.push(artifact);
       }
 
-      // Configuration files
+      // Config files
       for (const file of workflowResult.configFiles) {
         const artifact = await db.artifact.create({
           data: {
             name: file.filename,
             content: file.content,
-            type: "code",
+            type: "config",
+            language: file.language,
             stageId: stage.id,
           },
         });

@@ -4,12 +4,9 @@ import { Artifact, StageType } from "@prisma/client";
 import { FileContentViewer } from "./file-content-viewer";
 import { FileBrowserViewer } from "./file-browser-viewer";
 
-interface ArtifactWithLanguage extends Artifact {
-  language?: string;
-}
 
 interface FileWindowProps {
-  files: (ArtifactWithLanguage & { stageType?: StageType })[];
+  files: (Artifact & { stageType?: StageType })[];
   activeFileId: string;
   onFileSelect: (fileId: string) => void;
   projectId: string;
@@ -25,7 +22,9 @@ export function FileWindow({
   onFileDeleted,
   onFileRenamed,
 }: FileWindowProps) {
+  console.log('FileWindow: Received files', files.length, 'activeFileId', activeFileId);
   const activeFile = files.find((f) => f.id === activeFileId) || files[0];
+  console.log('FileWindow: activeFile', activeFile?.name);
 
   if (files.length === 0) {
     return (

@@ -2,7 +2,7 @@ import { Agent } from "./base-agent";
 import { Stage, Artifact } from "@prisma/client";
 import { db } from "@/lib/db";
 import { ContextRetriever } from "../context-retriever";
-import { TestingWorkflowManager } from "../testing-workflow";
+import { TestingWorkflowManager } from "../workflows/testing-workflow";
 import { GeneratedFile } from "../types";
 
 interface TestWorkflowResult {
@@ -49,6 +49,7 @@ export class TestingAgent implements Agent {
                 name: file.filename,
                 content: file.content,
                 type: 'test',
+                language: file.language,
                 stageId: stage.id,
               },
             });

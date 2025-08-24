@@ -1,7 +1,8 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { LLMChain } from "langchain/chains";
-import type { GeneratedFile } from "./types";
+import { detectOptimalLanguage, cleanCodeContent } from "@/lib/language-utils";
+import type { GeneratedFile } from "../types";
 
 // Development workflow result interface
 export interface DevelopmentWorkflowResult {
@@ -41,14 +42,14 @@ export class DevelopmentWorkflowManager {
       );
 
       // Step 2: Generate test files
-      console.log("🧪 Step 3: Generating test files...");
+      console.log("🧪 Step 2: Generating test files...");
       const testFiles = await this.generateTestFiles(
         userPrompt,
         backendFiles,
       );
 
       // Step 3: Generate configuration files
-      console.log("⚙️ Step 4: Generating configuration files...");
+      console.log("⚙️ Step 3: Generating configuration files...");
       const configFiles = await this.generateConfigFiles(
         userPrompt,
         designContext
@@ -328,10 +329,16 @@ Generate production-ready configuration files that support the entire developmen
       }
 
       if (filename && content) {
+        // Clean the content to remove any markdown code blocks
+        const cleanedContent = cleanCodeContent(content.trim(), language);
+        
+        // Detect the optimal language for Monaco editor
+        const detectedLanguage = detectOptimalLanguage(filename, language);
+        
         files.push({
           filename,
-          content: content.trim(),
-          language: language || "typescript",
+          content: cleanedContent,
+          language: detectedLanguage,
           type: (type as GeneratedFile["type"]) || "code",
         });
       }

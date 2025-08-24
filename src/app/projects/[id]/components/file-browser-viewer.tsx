@@ -20,12 +20,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface ArtifactWithLanguage extends Artifact {
-  language?: string;
-}
-
 interface FileBrowserViewerProps {
-  files: (ArtifactWithLanguage & { stageType?: StageType })[];
+  files: (Artifact & { stageType?: StageType })[];
   activeFileId: string;
   onFileSelect: (fileId: string) => void;
   projectId: string;

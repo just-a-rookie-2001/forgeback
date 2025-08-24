@@ -57,8 +57,8 @@ export function NewProjectDialog({ children, onProjectCreated }: NewProjectDialo
       }
 
       toast({
-        title: 'Project creation started!',
-        description: 'Your project is being set up. Starting with the planning phase.',
+        title: 'Project created successfully!',
+        description: 'Your project has been created and is ready for development.',
       })
 
       setIsOpen(false)
@@ -67,7 +67,7 @@ export function NewProjectDialog({ children, onProjectCreated }: NewProjectDialo
       // Call the callback to refresh the parent component
       onProjectCreated?.()
       
-      router.push(`/projects/${result.projectId}`)
+      router.push(`/projects/${result.id}`)
 
     } catch (error) {
       toast({

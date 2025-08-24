@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { WorkflowManager } from "@/lib/llm/workflow-manager";
 
 // GET: fetch all projects for the current user
 export async function GET() {
@@ -46,15 +45,8 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  // Start the workflow
-  const workflowManager = new WorkflowManager();
-  workflowManager.startWorkflow(project.id, project.prompt).catch((error) => {
-    console.error(`Workflow failed for project ${project.id}:`, error);
-    db.project.update({
-      where: { id: project.id },
-      data: { status: "error" },
-    });
-  });
+  // Don't start the workflow automatically - let users explore the project first
+  // The workflow can be triggered manually from the project page
 
   return NextResponse.json(project, { status: 201 });
 }

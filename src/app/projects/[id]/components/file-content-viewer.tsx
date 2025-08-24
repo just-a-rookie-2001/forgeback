@@ -7,12 +7,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Artifact, StageType } from "@prisma/client";
 import { CodeEditor } from "./code-editor";
 
-interface ArtifactWithLanguage extends Artifact {
-  language?: string;
-}
-
 interface FileContentViewerProps {
-  activeFile: (ArtifactWithLanguage & { stageType?: StageType }) | undefined;
+  activeFile: (Artifact & { stageType?: StageType }) | undefined;
 }
 
 export function FileContentViewer({ activeFile }: FileContentViewerProps) {

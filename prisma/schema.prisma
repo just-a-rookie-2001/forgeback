@@ -92,7 +92,7 @@ model Artifact {
   name      String
   content   String
   type      String // e.g., 'documentation', 'code', 'diagram', 'file'
-  language  String   @default("javascript") // programming language for code artifacts
+  language  String   @default("plaintext") // programming language for code artifacts
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   stageId   String

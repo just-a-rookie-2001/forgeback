@@ -1,5 +1,6 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { GeneratedFile } from "./types";
+import { GeneratedFile } from "../types";
+import { detectOptimalLanguage, cleanCodeContent } from "@/lib/language-utils";
 
 export class DeploymentWorkflowManager {
   private llm: ChatGoogleGenerativeAI;
@@ -446,10 +447,16 @@ Create a detailed summary covering:
         }
 
         if (filename && content) {
+          // Clean the content to remove any markdown code blocks
+          const cleanedContent = cleanCodeContent(content, language);
+          
+          // Detect the optimal language for Monaco editor
+          const detectedLanguage = detectOptimalLanguage(filename, language);
+          
           files.push({
             filename,
-            content,
-            language,
+            content: cleanedContent,
+            language: detectedLanguage,
             type: type as "api" | "db" | "test" | "config" | "middleware" | "component" | "page" | "service" | "style" | "utility" | "code"
           });
           console.log(`✅ Parsed deployment file: ${filename}`);

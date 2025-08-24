@@ -2,7 +2,7 @@ import { Agent } from "./base-agent";
 import { Stage, Artifact } from "@prisma/client";
 import { db } from "@/lib/db";
 import { ContextRetriever } from "../context-retriever";
-import { DeploymentWorkflowManager } from "../deployment-workflow";
+import { DeploymentWorkflowManager } from "../workflows/deployment-workflow";
 import { GeneratedFile } from "../types";
 
 interface DeploymentWorkflowResult {
@@ -51,6 +51,7 @@ export class DeploymentAgent implements Agent {
                 name: file.filename,
                 content: file.content,
                 type: 'config',
+                language: file.language,
                 stageId: stage.id,
               },
             });

@@ -36,6 +36,44 @@ export class BackendAgent {
     }
   }
 
+  async processMessageStream(
+    message: string,
+    projectPrompt: string,
+    conversationHistory: string,
+    onChunk: (chunk: string) => void
+  ): Promise<void> {
+    const systemInstruction = `You are an AI backend assistant helping refine and extend a generated backend project.
+Project original prompt: "${projectPrompt}".
+
+Guidelines:
+- Provide helpful, actionable advice about backend development
+- You can suggest improvements, explain concepts, help with architecture decisions
+- If the user asks for code implementation, let them know you can generate it automatically - no need to use the Regenerate button
+- Keep responses concise but informative
+- Be encouraging and helpful`
+
+    const prompt = `${systemInstruction}\n\nConversation so far:\n${conversationHistory}\n\nUSER: ${message}\nASSISTANT:`
+    
+    try {
+      const stream = await this.llm.stream(prompt)
+      
+      for await (const chunk of stream) {
+        const content = typeof chunk.content === 'string' 
+          ? chunk.content 
+          : Array.isArray(chunk.content)
+            ? chunk.content.map(p => typeof p === 'string' ? p : JSON.stringify(p)).join('')
+            : JSON.stringify(chunk.content)
+            
+        if (content) {
+          onChunk(content)
+        }
+      }
+    } catch (error) {
+      console.error('Stream failed:', error)
+      onChunk("I'm having trouble responding right now. Please try again.")
+    }
+  }
+
   private detectCodeRequest(message: string): { shouldGenerate: boolean; intent: string } {
     const lowerMessage = message.toLowerCase()
     
